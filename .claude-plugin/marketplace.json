@@ -1,0 +1,49 @@
+{
+  "name": "kongyo-skill",
+  "owner": {
+    "name": "kongyo",
+    "email": ""
+  },
+  "metadata": {
+    "description": "TypeScript development skills collection",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "development-philosophy",
+      "description": "Professional development guidelines emphasizing simplicity, authentic communication, and analysis-first approach for planning tasks, maintaining professional communication, and following minimalist implementation philosophy.",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/development-philosophy"
+      ]
+    },
+    {
+      "name": "oxlint-setup",
+      "description": "Complete workflow for setting up oxlint in TypeScript projects including installation, configuration, and integration with development workflows.",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/oxlint-setup"
+      ]
+    },
+    {
+      "name": "ts-error-handling",
+      "description": "Result type-based error handling for TypeScript following strict no-exceptions design pattern. Converts try-catch blocks and thrown errors into explicit Result types for type-safe error management.",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/ts-error-handling"
+      ]
+    },
+    {
+      "name": "tsconfig-setup",
+      "description": "Set up and optimize tsconfig.json for TypeScript projects based on the latest community best practices including compiler options optimization and recommended settings.",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/tsconfig-setup"
+      ]
+    }
+  ]
+}
