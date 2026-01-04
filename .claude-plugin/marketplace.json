@@ -1,47 +1,26 @@
 {
-  "name": "kongyo-skill",
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "kongyo-skills",
+  "version": "1.0.0",
+  "description": "TypeScript development skills collection - professional development guidelines, error handling patterns, and project configuration best practices",
   "owner": {
-    "name": "kongyo",
+    "name": "kongyo2",
     "email": ""
-  },
-  "metadata": {
-    "description": "TypeScript development skills collection",
-    "version": "1.0.0"
   },
   "plugins": [
     {
-      "name": "development-philosophy",
-      "description": "Professional development guidelines emphasizing simplicity, authentic communication, and analysis-first approach for planning tasks, maintaining professional communication, and following minimalist implementation philosophy.",
+      "name": "typescript-skills",
+      "description": "Collection of TypeScript development skills including Result type-based error handling, tsconfig.json optimization, oxlint setup, and professional development guidelines. Use for TypeScript project configuration, error handling patterns, linting setup, and development workflow best practices.",
+      "version": "1.0.0",
+      "author": {
+        "name": "kongyo2"
+      },
       "source": "./",
       "strict": false,
       "skills": [
-        "./skills/development-philosophy"
-      ]
-    },
-    {
-      "name": "oxlint-setup",
-      "description": "Complete workflow for setting up oxlint in TypeScript projects including installation, configuration, and integration with development workflows.",
-      "source": "./",
-      "strict": false,
-      "skills": [
-        "./skills/oxlint-setup"
-      ]
-    },
-    {
-      "name": "ts-error-handling",
-      "description": "Result type-based error handling for TypeScript following strict no-exceptions design pattern. Converts try-catch blocks and thrown errors into explicit Result types for type-safe error management.",
-      "source": "./",
-      "strict": false,
-      "skills": [
-        "./skills/ts-error-handling"
-      ]
-    },
-    {
-      "name": "tsconfig-setup",
-      "description": "Set up and optimize tsconfig.json for TypeScript projects based on the latest community best practices including compiler options optimization and recommended settings.",
-      "source": "./",
-      "strict": false,
-      "skills": [
+        "./skills/development-philosophy",
+        "./skills/oxlint-setup",
+        "./skills/ts-error-handling",
         "./skills/tsconfig-setup"
       ]
     }
