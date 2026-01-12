@@ -1,13 +1,21 @@
 ---
 name: ts-error-handling
-description: Apply Result type-based error handling to TypeScript code following a strict no-exceptions design pattern. Use this skill when implementing error handling, refactoring exception-based code to Result types, or when working on projects that mandate no-throw policies. Converts try-catch blocks, thrown errors, and Promise rejections into explicit Result types for type-safe error management.
+description: Apply Result type-based error handling to TypeScript code using neverthrow library. Use this skill when implementing error handling, refactoring exception-based code to Result types, or when working on projects that mandate no-throw policies. Converts try-catch blocks, thrown errors, and Promise rejections into explicit Result types for type-safe error management.
 ---
 
-# TypeScript Error Handling with Result Types
+# TypeScript Error Handling with neverthrow
 
 ## Overview
 
-This skill implements TypeScript error handling using Result types instead of exceptions. Transform exception-based code into explicit, type-safe error handling that makes failure paths visible and forces deliberate error management decisions at each function boundary.
+This skill implements TypeScript error handling using the neverthrow library's Result types instead of exceptions. Transform exception-based code into explicit, type-safe error handling that makes failure paths visible and forces deliberate error management decisions at each function boundary.
+
+## Setup
+
+Install the neverthrow package:
+
+```bash
+pnpm add neverthrow
+```
 
 ## When to Use This Skill
 
@@ -31,29 +39,18 @@ Use this skill when:
 
 ### Result Type Structure
 
-Result types represent computation outcomes that can either succeed or fail:
+neverthrow provides the `Result<T, E>` type representing computation outcomes that can either succeed or fail:
 
 ```typescript
-type Result<T, E> =
-  | { ok: true; value: T }
-  | { ok: false; error: E }
+import { Result, ok, err } from "neverthrow"
+
+// ok(value) creates a success Result
+// err(error) creates a failure Result
 ```
 
-## Implementation Approaches
+## Basic Usage
 
-### Approach 1: neverthrow Library (Recommended)
-
-Install the neverthrow package for production-ready Result type implementation:
-
-```bash
-pnpm add neverthrow
-# or
-npm install neverthrow
-# or
-yarn add neverthrow
-```
-
-**Basic Usage:**
+### Creating Results
 
 ```typescript
 import { Result, ok, err } from "neverthrow"
@@ -75,27 +72,24 @@ if (result.isOk()) {
 }
 ```
 
-### Approach 2: Custom Result Type
-
-Use custom implementation from `src/utils/result.ts` for zero dependencies:
+### Async Operations with ResultAsync
 
 ```typescript
-import { Result, ok, err, isOk, isErr } from "./utils/result.ts"
+import { ResultAsync, okAsync, errAsync } from "neverthrow"
 
-function parseJSON(text: string): Result<unknown, Error> {
-  try {
-    return ok(JSON.parse(text))
-  } catch (e) {
-    return err(e instanceof Error ? e : new Error(String(e)))
-  }
+async function fetchUser(id: string): ResultAsync<User, string> {
+  return ResultAsync.fromPromise(
+    fetch(`/api/users/${id}`).then(res => res.json()),
+    () => "Failed to fetch user"
+  )
 }
 
-// Check with helper functions
-const result = parseJSON('{"valid": true}')
-if (isOk(result)) {
-  console.log(result.value) // Type: unknown
+// Usage
+const result = await fetchUser("123")
+if (result.isOk()) {
+  console.log(result.value)
 } else {
-  console.error(result.error) // Type: Error
+  console.error(result.error)
 }
 ```
 
@@ -119,6 +113,8 @@ function loadUser(id: string): User {
 
 **After (Result types):**
 ```typescript
+import { Result, ok, err } from "neverthrow"
+
 function loadUser(id: string): Result<User, string> {
   if (!id) {
     return err("User ID required")
@@ -139,7 +135,31 @@ if (result.isOk()) {
 }
 ```
 
-### Pattern 2: Converting try-catch Blocks
+### Pattern 2: Wrapping External Throwing Code with fromThrowable
+
+```typescript
+import { Result, fromThrowable } from "neverthrow"
+
+// Wrap synchronous throwing functions
+const safeJsonParse = fromThrowable(
+  JSON.parse,
+  (error) => `Failed to parse JSON: ${error}`
+)
+
+function parseConfig(text: string): Result<Config, string> {
+  return safeJsonParse(text) as Result<Config, string>
+}
+
+// Usage
+const result = parseConfig('{"valid": true}')
+if (result.isOk()) {
+  console.log(result.value)
+} else {
+  console.error(result.error)
+}
+```
+
+### Pattern 3: Converting try-catch Blocks
 
 **Before (try-catch):**
 ```typescript
@@ -155,34 +175,25 @@ function readConfig(path: string): Config {
 
 **After (Result types with fromThrowable):**
 ```typescript
-import { fromThrowable } from "./utils/result.ts" // or neverthrow
+import { Result, fromThrowable } from "neverthrow"
 
 const safeReadFile = fromThrowable(
   (path: string) => fs.readFileSync(path, 'utf-8'),
-  (error) => new Error(`Failed to read file: ${error}`)
+  (error) => `Failed to read file: ${error}`
 )
 
 const safeParseJSON = fromThrowable(
   (text: string) => JSON.parse(text),
-  (error) => new Error(`Failed to parse JSON: ${error}`)
+  (error) => `Failed to parse JSON: ${error}`
 )
 
-function readConfig(path: string): Result<Config, Error> {
-  const fileResult = safeReadFile(path)
-  if (fileResult.isErr()) {
-    return err(fileResult.error)
-  }
-
-  const parseResult = safeParseJSON(fileResult.value)
-  if (parseResult.isErr()) {
-    return err(parseResult.error)
-  }
-
-  return ok(parseResult.value as Config)
+function readConfig(path: string): Result<Config, string> {
+  return safeReadFile(path)
+    .andThen(content => safeParseJSON(content) as Result<Config, string>)
 }
 ```
 
-### Pattern 3: Converting Async/Promise Code
+### Pattern 4: Converting Async/Promise Code
 
 **Before (Promise with rejection):**
 ```typescript
@@ -195,24 +206,20 @@ async function fetchData(url: string): Promise<Data> {
 }
 ```
 
-**After (Result types with fromAsyncThrowable):**
+**After (ResultAsync):**
 ```typescript
-import { fromAsyncThrowable } from "./utils/result.ts"
-import { ResultAsync } from "neverthrow" // or custom implementation
+import { ResultAsync } from "neverthrow"
 
-const safeFetch = fromAsyncThrowable(
-  async (url: string) => {
-    const response = await fetch(url)
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`)
-    }
-    return response.json()
-  },
-  (error) => error instanceof Error ? error : new Error(String(error))
-)
-
-async function fetchData(url: string): Promise<Result<Data, Error>> {
-  return safeFetch(url)
+function fetchData(url: string): ResultAsync<Data, string> {
+  return ResultAsync.fromPromise(
+    fetch(url).then(async response => {
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      return response.json()
+    }),
+    (error) => error instanceof Error ? error.message : String(error)
+  )
 }
 
 // Usage
@@ -224,7 +231,7 @@ if (result.isOk()) {
 }
 ```
 
-### Pattern 4: Chaining Result Operations
+### Pattern 5: Chaining Result Operations
 
 **Chaining with map and andThen:**
 
@@ -258,9 +265,9 @@ if (result.isOk()) {
 }
 ```
 
-### Pattern 5: Combining Multiple Results
+### Pattern 6: Combining Multiple Results
 
-**Handling multiple operations:**
+**Using Result.combine:**
 
 ```typescript
 import { Result, ok, err } from "neverthrow"
@@ -283,20 +290,31 @@ function createAccount(
   email: string,
   password: string
 ): Result<Account, string> {
-  const emailResult = validateEmail(email)
-  if (emailResult.isErr()) {
-    return err(emailResult.error)
-  }
+  return Result.combine([
+    validateEmail(email),
+    validatePassword(password)
+  ]).map(([validEmail, validPassword]) => ({
+    email: validEmail,
+    password: validPassword
+  }))
+}
+```
 
-  const passwordResult = validatePassword(password)
-  if (passwordResult.isErr()) {
-    return err(passwordResult.error)
-  }
+**Sequential validation:**
 
-  return ok({
-    email: emailResult.value,
-    password: passwordResult.value
-  })
+```typescript
+function createAccount(
+  email: string,
+  password: string
+): Result<Account, string> {
+  return validateEmail(email)
+    .andThen(validEmail =>
+      validatePassword(password)
+        .map(validPassword => ({
+          email: validEmail,
+          password: validPassword
+        }))
+    )
 }
 ```
 
@@ -313,13 +331,7 @@ Scan code for operations that can fail:
 - Division or mathematical operations
 - Array access with potential undefined results
 
-### Step 2: Choose Implementation
-
-Decide between:
-- **neverthrow**: For production projects, full ecosystem support
-- **Custom Result type**: For zero dependencies, learning, or custom requirements
-
-### Step 3: Define Error Types
+### Step 2: Define Error Types
 
 Create specific error types for better type safety:
 
@@ -337,16 +349,16 @@ type DatabaseError =
 type AppError = ValidationError | DatabaseError
 ```
 
-### Step 4: Transform Functions
+### Step 3: Transform Functions
 
 Convert each error-prone function to return `Result<T, E>`:
 
 1. Change return type from `T` to `Result<T, ErrorType>`
 2. Replace `throw` statements with `err(error)`
 3. Replace successful returns with `ok(value)`
-4. Wrap external throwing code with `fromThrowable` or `fromAsyncThrowable`
+4. Wrap external throwing code with `fromThrowable`
 
-### Step 5: Update Call Sites
+### Step 4: Update Call Sites
 
 Update all code that calls the transformed functions:
 
@@ -368,7 +380,7 @@ if (userResult.isOk()) {
 }
 ```
 
-### Step 6: Verify No Remaining Throws
+### Step 5: Verify No Remaining Throws
 
 Search codebase for remaining exception patterns:
 - `throw new Error`
@@ -438,6 +450,8 @@ return err("Validation failed")
 Create reusable wrappers for common operations:
 
 ```typescript
+import { Result, ok, err, fromThrowable } from "neverthrow"
+
 const safeParseInt = (input: string): Result<number, string> => {
   const num = parseInt(input, 10)
   return isNaN(num) ? err("Not a number") : ok(num)
@@ -584,35 +598,36 @@ function loadConfig(path: string): Result<Config, FsError> {
 }
 ```
 
-### Async Operations with Promises
+### Async Operations with ResultAsync.fromPromise
 
 Wrap async operations that might reject:
 
 ```typescript
-import { fromAsyncThrowable } from "neverthrow"
+import { ResultAsync } from "neverthrow"
 
-const safeFetch = fromAsyncThrowable(
-  async (url: string, options?: RequestInit) => {
-    const response = await fetch(url, options)
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-    }
-    return response
-  },
-  (error) => ({
-    type: "network_error" as const,
-    message: error instanceof Error ? error.message : String(error)
-  })
-)
+const safeFetch = (url: string, options?: RequestInit) =>
+  ResultAsync.fromPromise(
+    fetch(url, options).then(async response => {
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+      return response
+    }),
+    (error) => ({
+      type: "network_error" as const,
+      message: error instanceof Error ? error.message : String(error)
+    })
+  )
 
-async function getUser(id: string): Promise<Result<User, NetworkError>> {
-  const response = await safeFetch(`/api/users/${id}`)
-  if (response.isErr()) {
-    return err(response.error)
-  }
-
-  const json = await safeJsonParse(response.value)
-  return json.map(data => data as User)
+function getUser(id: string): ResultAsync<User, NetworkError> {
+  return safeFetch(`/api/users/${id}`)
+    .andThen(response =>
+      ResultAsync.fromPromise(
+        response.json(),
+        () => ({ type: "network_error" as const, message: "Failed to parse response" })
+      )
+    )
+    .map(data => data as User)
 }
 ```
 
@@ -676,22 +691,20 @@ it("should handle different error types", () => {
 
 ### Key Functions
 
-**neverthrow:**
-- `ok(value)`: Create success Result
-- `err(error)`: Create failure Result
-- `result.isOk()`: Type guard for success
-- `result.isErr()`: Type guard for failure
-- `result.map(fn)`: Transform success value
-- `result.mapErr(fn)`: Transform error value
-- `result.andThen(fn)`: Chain Result-returning operations
-
-**Custom Result:**
-- `ok(value)`: Create success Result
-- `err(error)`: Create failure Result
-- `isOk(result)`: Type guard for success
-- `isErr(result)`: Type guard for failure
-- `fromThrowable(fn, errorHandler)`: Wrap throwing function
-- `fromAsyncThrowable(fn, errorHandler)`: Wrap async throwing function
+| Function | Description |
+|----------|-------------|
+| `ok(value)` | Create success Result |
+| `err(error)` | Create failure Result |
+| `result.isOk()` | Type guard for success |
+| `result.isErr()` | Type guard for failure |
+| `result.value` | Access success value (after isOk check) |
+| `result.error` | Access error value (after isErr check) |
+| `result.map(fn)` | Transform success value |
+| `result.mapErr(fn)` | Transform error value |
+| `result.andThen(fn)` | Chain Result-returning operations |
+| `Result.combine([...])` | Combine multiple Results |
+| `fromThrowable(fn, errorHandler)` | Wrap throwing function |
+| `ResultAsync.fromPromise(promise, errorHandler)` | Wrap Promise |
 
 ### Common Patterns Summary
 
@@ -699,14 +712,13 @@ it("should handle different error types", () => {
 2. **Success return**: `return value` → `return ok(value)`
 3. **Checking results**: `try-catch` → `if (result.isOk()) { ... } else { ... }`
 4. **Wrapping externals**: `externalFn()` → `fromThrowable(externalFn, handler)()`
-5. **Async wrapping**: `await promise` → `await fromAsyncThrowable(promise, handler)()`
+5. **Async wrapping**: `await promise` → `ResultAsync.fromPromise(promise, handler)`
+6. **Chaining**: `result.andThen(fn).map(fn2).mapErr(fn3)`
 
 ## Resources
 
-For comprehensive implementation guidance and setup instructions, refer to:
-
-- `references/error-handling-guide.md`: Complete Result types setup guide with detailed examples
 - Official neverthrow documentation: https://github.com/supermacro/neverthrow
+- Reference guide: https://raw.githubusercontent.com/mizchi/ts-guide/refs/heads/main/docs/ts-guide/error-handling.md
 
 ## Additional Notes
 
