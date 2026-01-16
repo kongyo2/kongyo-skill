@@ -21,32 +21,114 @@ Use this skill when:
 
 ## Setup Workflow
 
-### Step 1: Fetch Latest Documentation
+### Step 1: Read the Linter Setup Guide and Fetch Official Documentation
 
-Before proceeding with any setup steps, fetch the latest documentation to ensure accurate and up-to-date configuration:
+Before proceeding with any setup steps, read the embedded guide below and fetch official documentation to ensure accurate and up-to-date configuration.
 
-**Required documentation:**
-1. Primary reference - TypeScript linting guide:
-   ```
-   https://raw.githubusercontent.com/mizchi/ts-guide/refs/heads/main/docs/ts-guide/linter.md
-   ```
-   Use WebFetch to retrieve this document, focusing on oxlint setup and configuration instructions.
+---
 
-2. Official oxlint configuration documentation:
-   ```
-   https://oxc.rs/docs/guide/usage/linter/config.html
-   ```
-   Use WebFetch to retrieve the complete configuration guide, including setup, configuration file format, and usage instructions.
+## Linter Setup Guide
 
-**Additional documentation to fetch as needed:**
+### oxlint (Recommended)
 
-Based on the project's requirements, fetch additional documentation from oxc.rs as appropriate:
+#### Overview
+
+oxlint is a Rust-based linter that provides extremely fast linting with zero configuration. It offers:
+
+- **Blazing Fast Performance**: Written in Rust, it's significantly faster than JavaScript-based linters
+- **Comprehensive Rule Set**: Includes most essential ESLint rules and TypeScript-specific rules
+- **Zero Configuration**: Works out of the box with sensible defaults
+- **Growing Ecosystem**: Actively maintained with regular updates and new rules
+
+#### Setup
+
+```bash
+# Install oxlint
+pnpm add -D oxlint
+```
+
+#### Package.json Scripts
+
+```json
+{
+  "scripts": {
+    "lint": "oxlint --silent",
+    "lint:strict": "oxlint --deny-warnings",
+    "check:file": "oxlint"
+  }
+}
+```
+
+> **Note**: The `check:file` command allows linting specific files: `pnpm check:file src/index.ts`
+
+#### Configuration (.oxlintrc.json)
+
+```json
+{
+  "plugins": ["promise", "import", "node"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn"
+  },
+  "rules": {
+    "no-console": "warn",
+    "typescript/no-explicit-any": "error"
+  },
+  "ignorePatterns": ["node_modules", "dist", "build", "coverage", "*.min.js"]
+}
+```
+
+#### CI Integration
+
+```yaml
+# In .github/workflows/ci.yaml
+- run: pnpm lint
+```
+
+### Selection Guidelines
+
+#### Choose oxlint when:
+
+- Performance is critical
+- You want zero configuration
+- You need fast CI/CD feedback
+- Your project uses standard linting rules
+
+### Integration with check script
+
+When adding a linter, update the main `check` script to include linting:
+
+```json
+{
+  "scripts": {
+    "check": "pnpm typecheck && pnpm test && pnpm format:check && pnpm lint"
+  }
+}
+```
+
+### Best Practices for oxlint
+
+- Use for performance-critical projects
+- Combine with other tools for comprehensive checking
+- Ideal for large codebases
+- Good for CI/CD pipelines
+
+### Troubleshooting oxlint
+
+- **Missing rules**: Check oxlint documentation for supported rules
+- **Configuration**: Ensure .oxlintrc.json is valid JSON
+- **File patterns**: Use correct glob patterns for file matching
+
+---
+
+**Official oxlint documentation (fetch as needed):**
+
+For the latest configuration options and features, use WebFetch to retrieve official documentation from oxc.rs:
+- Configuration guide: `https://oxc.rs/docs/guide/usage/linter/config.html`
 - Rules configuration: `https://oxc.rs/docs/guide/usage/linter/rules.html`
 - Plugin system: `https://oxc.rs/docs/guide/usage/linter/plugins.html`
 - CLI options: `https://oxc.rs/docs/guide/usage/linter/cli.html`
 - Generated configuration reference: `https://oxc.rs/docs/guide/usage/linter/generated-config.html`
-
-Always fetch documentation before making recommendations to ensure the latest best practices are followed.
 
 ### Step 2: Analyze Project Structure
 
@@ -138,16 +220,13 @@ If migrating from ESLint:
 - Consider keeping ESLint for rules not covered by oxlint
 - Test thoroughly before removing ESLint entirely
 
-## Documentation URLs Reference
+## Official Documentation URLs Reference
 
-**Primary references (always fetch):**
-- TypeScript guide: `https://raw.githubusercontent.com/mizchi/ts-guide/refs/heads/main/docs/ts-guide/linter.md`
+**Fetch from oxc.rs as needed for latest features:**
 - Configuration guide: `https://oxc.rs/docs/guide/usage/linter/config.html`
-
-**Supplementary references (fetch as needed):**
 - Rules: `https://oxc.rs/docs/guide/usage/linter/rules.html`
 - Plugins: `https://oxc.rs/docs/guide/usage/linter/plugins.html`
 - CLI: `https://oxc.rs/docs/guide/usage/linter/cli.html`
 - Config reference: `https://oxc.rs/docs/guide/usage/linter/generated-config.html`
 
-Always verify URLs are current and fetch fresh documentation for each setup to avoid outdated advice.
+The Linter Setup Guide is embedded in Step 1 above. Fetch official oxc.rs documentation for the latest configuration options.
