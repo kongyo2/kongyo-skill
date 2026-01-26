@@ -1,6 +1,6 @@
 ---
 name: oxlint-setup
-description: This skill should be used when setting up oxlint in a new TypeScript project. It provides a complete workflow for installing oxlint, creating configuration files, and integrating it into the project's development workflow. The skill fetches the latest documentation to ensure up-to-date and accurate setup instructions, preventing outdated configuration advice.
+description: This skill should be used when setting up oxlint in a new TypeScript project. It provides a complete workflow for installing oxlint, creating configuration files, and integrating it into the project's development workflow. The configuration specified in this skill is mandatory and must be applied exactly as documented.
 ---
 
 # Oxlint Setup
@@ -19,9 +19,9 @@ Use this skill when:
 
 ## Setup Workflow
 
-### Step 1: Read the Linter Setup Guide and Fetch Official Documentation
+### Step 1: Read the Linter Setup Guide
 
-Before proceeding with any setup steps, read the embedded guide below and fetch official documentation to ensure accurate and up-to-date configuration.
+Before proceeding with any setup steps, read the embedded guide below carefully. **All configuration must be applied exactly as documented.**
 
 ---
 
@@ -129,15 +129,6 @@ When adding a linter, update the main `check` script to include linting:
 
 ---
 
-**Official oxlint documentation (fetch as needed):**
-
-For the latest configuration options and features, use WebFetch to retrieve official documentation from oxc.rs:
-- Configuration guide: `https://oxc.rs/docs/guide/usage/linter/config.html`
-- Rules configuration: `https://oxc.rs/docs/guide/usage/linter/rules.html`
-- Plugin system: `https://oxc.rs/docs/guide/usage/linter/plugins.html`
-- CLI options: `https://oxc.rs/docs/guide/usage/linter/cli.html`
-- Generated configuration reference: `https://oxc.rs/docs/guide/usage/linter/generated-config.html`
-
 ### Step 2: Analyze Project Structure
 
 Before installation, examine the project to understand:
@@ -181,17 +172,15 @@ Create `.oxlintrc.json` in the project root using **exactly** the configuration 
 **Configuration approach:**
 1. Copy the exact configuration from the "Configuration (.oxlintrc.json)" section above
 2. Do not customize or weaken any settings
-3. Customize based on project needs
-4. Include common ignore patterns (node_modules, dist, build, coverage, etc.)
+3. Include common ignore patterns (node_modules, dist, build, coverage, etc.)
 
 ### Step 5: Add npm Scripts
 
-Add linting scripts to `package.json`. Based on current best practices (verify with fetched docs), typical scripts include:
+Add linting scripts to `package.json`. The required scripts are:
 
-- Standard linting command
-- Strict mode with warnings as errors
-- File-specific checking capability
-- Integration with other development scripts (e.g., pre-commit hooks)
+- `lint`: Standard linting command (`oxlint --silent`)
+- `lint:strict`: Strict mode with warnings as errors (`oxlint --deny-warnings`)
+- `check:file`: File-specific checking capability (`oxlint`)
 
 Use the Edit tool to add scripts to the existing `package.json`.
 
@@ -216,26 +205,16 @@ Highlight oxlint's performance advantages when presenting the setup:
 
 ### Configuration Flexibility
 
-While oxlint works with zero configuration, projects may need customization:
+While oxlint works with zero configuration, projects may need customization for ignore patterns only:
 - Inline comments for specific code sections (`/* oxlint-disable rule-name */`)
 - CLI options for one-off overrides
 - Category-level configuration for broad rule groups
 
+> **Note**: Configuration flexibility should only be used to add additional restrictions or modify ignore patterns. Never use it to weaken the mandatory configuration.
+
 ### Migration Notes
 
 If migrating from ESLint:
-- Consult fetched documentation for migration guidance
 - Note that not all ESLint plugins have oxlint equivalents
 - Consider keeping ESLint for rules not covered by oxlint
 - Test thoroughly before removing ESLint entirely
-
-## Official Documentation URLs Reference
-
-**Fetch from oxc.rs as needed for latest features:**
-- Configuration guide: `https://oxc.rs/docs/guide/usage/linter/config.html`
-- Rules: `https://oxc.rs/docs/guide/usage/linter/rules.html`
-- Plugins: `https://oxc.rs/docs/guide/usage/linter/plugins.html`
-- CLI: `https://oxc.rs/docs/guide/usage/linter/cli.html`
-- Config reference: `https://oxc.rs/docs/guide/usage/linter/generated-config.html`
-
-The Linter Setup Guide is embedded in Step 1 above. Fetch official oxc.rs documentation for the latest configuration options.
