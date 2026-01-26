@@ -9,8 +9,6 @@ description: This skill should be used when setting up oxlint in a new TypeScrip
 
 This skill guides the complete setup of oxlint in a TypeScript project. oxlint is a Rust-based linter that provides extremely fast linting with minimal configuration, encompassing most essential ESLint and TypeScript-specific rules.
 
-The skill follows a documentation-driven approach: instead of embedding potentially outdated configuration examples, it fetches the latest documentation at execution time to ensure current and accurate setup instructions.
-
 ## When to Use This Skill
 
 Use this skill when:
