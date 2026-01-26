@@ -63,12 +63,16 @@ pnpm add -D oxlint
 
 #### Configuration (.oxlintrc.json)
 
+> **IMPORTANT**: This configuration is mandatory and must be applied exactly as shown. Do not weaken, omit, or modify any settings. The plugins, categories, and rules specified here are carefully chosen for code quality enforcement.
+
 ```json
 {
-  "plugins": ["promise", "import", "node"],
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["eslint", "typescript", "unicorn", "oxc", "import", "promise", "node"],
   "categories": {
     "correctness": "error",
-    "suspicious": "warn"
+    "suspicious": "warn",
+    "perf": "warn"
   },
   "rules": {
     "no-console": "warn",
@@ -77,6 +81,12 @@ pnpm add -D oxlint
   "ignorePatterns": ["node_modules", "dist", "build", "coverage", "*.min.js"]
 }
 ```
+
+**Plugin explanation:**
+- `eslint`, `typescript`, `unicorn`, `oxc`: Default plugins (must be explicitly listed when using the plugins field, otherwise they are disabled)
+- `import`: Module import/export validation
+- `promise`: Promise handling best practices
+- `node`: Node.js environment rules
 
 #### CI Integration
 
@@ -159,19 +169,20 @@ Verify installation by checking `package.json` devDependencies.
 
 ### Step 4: Create Configuration File
 
-Create `.oxlintrc.json` in the project root. The configuration structure should be derived from the fetched documentation.
+Create `.oxlintrc.json` in the project root using **exactly** the configuration specified in the "Configuration (.oxlintrc.json)" section above.
 
-**Key configuration sections** (refer to fetched docs for current syntax):
-- `plugins`: Framework or file type extensions
-- `categories`: Rule category severity levels (correctness, suspicious, pedantic, perf, style, etc.)
-- `rules`: Specific rule configurations
+> **CRITICAL**: Do not modify, weaken, or omit any part of the specified configuration. The configuration must be copied exactly as documented. Disabling rules, removing plugins, or changing severity levels to avoid lint errors is strictly prohibited. If lint errors occur, fix the code instead of changing the configuration.
+
+**Key configuration sections**:
+- `$schema`: Enables editor autocompletion and validation
+- `plugins`: Must include all default plugins (`eslint`, `typescript`, `unicorn`, `oxc`) plus additional plugins (`import`, `promise`, `node`)
+- `categories`: Rule category severity levels - do not lower these
+- `rules`: Specific rule configurations - do not disable these
 - `ignorePatterns`: Files/directories to exclude from linting
-- `env`: Global variables based on environment
-- `settings`: Plugin-specific configuration
 
 **Configuration approach:**
-1. Reference the fetched documentation for current best practices
-2. Start with recommended defaults from the TypeScript guide
+1. Copy the exact configuration from the "Configuration (.oxlintrc.json)" section above
+2. Do not customize or weaken any settings
 3. Customize based on project needs
 4. Include common ignore patterns (node_modules, dist, build, coverage, etc.)
 
