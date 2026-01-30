@@ -18,9 +18,9 @@
       "source": "./",
       "strict": false,
       "skills": [
-        "./skills/development-philosophy",
         "./skills/oxlint-setup",
         "./skills/ts-error-handling",
+        "./skills/typescript",
         "./skills/tsconfig-setup"
       ]
     }
